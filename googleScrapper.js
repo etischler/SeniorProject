@@ -8,10 +8,10 @@ var webpage = require("webpage"),
 var debug = false,
     pageIndex = 0,
     allLinks = [],
-    url = "https://www.google.com/searchbyimage?&image_url=https://i.imgur.com/Lcq4guG.jpg",
+    url = "https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg",
     searchTerm = "mongodb vs couchdb",
     maxSearchPages = 3;
-
+//https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
 var createPage = function () {
 
     var page = webpage.create();
@@ -60,6 +60,16 @@ var createPage = function () {
 var collectLinks = function () {
     var hrefs = page.evaluate(function () {
         var links = document.querySelectorAll("h3.r a");
+        return Array.prototype.map.call(links, function (anchor) {
+            return anchor.getAttribute("href");
+        });
+    });
+    return hrefs;
+}
+
+var collectOtherLinks = function () {
+    var hrefs = page.evaluate(function () {
+        var links = document.querySelectorAll("h3 a");
         return Array.prototype.map.call(links, function (anchor) {
             return anchor.getAttribute("href");
         });
@@ -196,6 +206,11 @@ var getLinksAndPrices = function () {
     }
 
     var links = collectLinks();
+    if(links.length==0){
+        //links came up blank---WAHH
+        links = collectOtherLinks();
+
+    }
     //allLinks = allLinks.concat(links);
     //console.log(allLinks);
     var innerHTML = page.evaluate(function () {
