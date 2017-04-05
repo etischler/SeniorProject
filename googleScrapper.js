@@ -2,7 +2,7 @@
  * Created by andy hulstkamp
  */
 
-var webpage = require("webpage"),
+var mypage = require("webpage"),
     fs = require("fs");
 
 var debug = false,
@@ -14,7 +14,7 @@ var debug = false,
 //https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
 var createPage = function () {
 
-    var page = webpage.create();
+    var page = mypage.create();
 
     //set some headers to get the content we want
     page.customHeaders = {
