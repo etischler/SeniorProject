@@ -1,10 +1,11 @@
+var system = require('system');
 var webpage = require("webpage"),
     fs = require("fs");
-
+//console.log(system.args[1]);
 var debug = false,
     pageIndex = 0,
     allLinks = [],
-    url = "https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg",
+    url = "https://www.google.com/searchbyimage?&image_url=" + system.args[1],
     searchTerm = "mongodb vs couchdb",
     maxSearchPages = 3;
 //https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
@@ -40,7 +41,7 @@ var createPage = function () {
     };
 
     page.onLoadStarted = function() {
-        console.log("loading page...");
+        //console.log("loading page...");
     };
 
     page.onLoadFinished = function(status) {
@@ -53,6 +54,16 @@ var createPage = function () {
     return page;
 }
 
+
+var collectThumbnails = function () {
+    var hrefs = page.evaluate(function () {
+        var links = document.querySelectorAll("img._zyj");
+        return Array.prototype.map.call(links, function (anchor) {
+            return anchor.getAttribute("src");
+        });
+    });
+    return hrefs;
+}
 
 var collectLinks = function () {
     var hrefs = page.evaluate(function () {
@@ -153,7 +164,7 @@ var toShopPage = function () {
         }
     }
 
-    console.log(innerHTMLShop + " " + hrefs[numberLink]);
+    //console.log(innerHTMLShop + " " + hrefs[numberLink]);
 
     //console.log("also happens");
     
@@ -231,10 +242,32 @@ var getLinksAndPrices = function () {
         });
     });
 
+    var thumbnails = collectThumbnails();
+
 
     //console.log(companys.length);
     for(var i = 0; i < 5 && i < companys.length; i++){
-        console.log(links[i] + " " +  companys[i]);
+
+        console.log('</' + thumbnails[i] + '\\>');
+
+        if(links[i][0]!=null && links[i][0]=="/")
+            console.log('https://www.google.com/'+links[i] /*+ "\n" +  companys[i]*/);
+        else
+            console.log(links[i]);
+
+        //parse the companys array to seperate the price and the company
+        var indieSplitCase = companys[i].split(" ");
+        console.log(indieSplitCase[0]);
+         var actualCompany = '';
+         for(var j = 1; j <indieSplitCase.length;j++){
+            if(indieSplitCase[j]!="from")
+                actualCompany += indieSplitCase[j] + ' ';
+                //console.log(indieSplitCase[j] + ' ');
+         }
+         console.log(actualCompany);
+
+
+
     }
 
    

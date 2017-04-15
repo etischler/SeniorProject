@@ -2,18 +2,19 @@ http = require('http');
 fs = require('fs');
 qs = require('querystring');
 cmd=require('node-cmd');
-function decodeBase64Image(dataString) {
-  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-    response = {};
 
-  if (matches.length !== 3) {
-    return new Error('Invalid input string');
-  }
+ function getClientAddress(req) {
+        return (req.headers['x-forwarded-for'] || '').split(',')[0] 
+        || req.connection.remoteAddress;
+};
 
-  response.type = matches[1];
-  response.data = new Buffer(matches[2], 'base64');
+function myCallBack(dataString) { //we will now format data into json object and send back to requester
+  
 
-  return response;
+
+
+
+
 }
 //f=fs.createWriteStream('name.jpeg');
 server = http.createServer( function(req, res) {
@@ -22,7 +23,7 @@ server = http.createServer( function(req, res) {
 
     if (req.method == 'POST') {
         console.log("POST");
-        //console.log(req);
+        console.log('Incoming post from: ' + getClientAddress(req) );
         
         var body = '';
         req.setEncoding('binary');
@@ -35,7 +36,7 @@ server = http.createServer( function(req, res) {
         });
         req.on('end', function () {
             fs.writeFile("body.png", body, 'binary', function(err){
-              console.log("Saved try.");
+              console.log("Saved pic.");
               //console.log(body);
             });
         
@@ -47,19 +48,21 @@ server = http.createServer( function(req, res) {
 
 
         //hardcode return value for now. instead will be method call
-        yayaReturnURL += 'http://24.250.190.127:3000/'
+        yayaReturnURL += 'https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg'
 
         var scrapperData ='';
-        console.log('before');
+        //console.log('before');
         cmd.get(
             yayaReturnURL,
             function(data){
-              //console.log(data)
+              console.log(data);
               scrapperData += data;
+
+              myCallBack(scrapperData);
             }
         );
-
-        console.log(scrapperData);
+        
+        
 
 
         res.writeHead(200, {'Content-Type': 'text/html'});
