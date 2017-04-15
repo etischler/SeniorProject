@@ -1,8 +1,4 @@
-/**
- * Created by andy hulstkamp
- */
-
-var mypage = require("webpage"),
+var webpage = require("webpage"),
     fs = require("fs");
 
 var debug = false,
@@ -12,9 +8,10 @@ var debug = false,
     searchTerm = "mongodb vs couchdb",
     maxSearchPages = 3;
 //https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
+//https://www.google.com/searchbyimage?&image_url=http://24.250.190.127:3000
 var createPage = function () {
 
-    var page = mypage.create();
+    var page = webpage.create();
 
     //set some headers to get the content we want
     page.customHeaders = {
