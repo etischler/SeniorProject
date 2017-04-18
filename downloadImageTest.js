@@ -4,10 +4,69 @@ qs = require('querystring');
 cmd=require('node-cmd');
 request = require('request');
 
- function getClientAddress(req) {
+
+var accessID = process.argv[2];
+var secretAccessKey = process.argv[3];
+//console.log(secretAccessKey);
+
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getClientAddress(req) {
         return (req.headers['x-forwarded-for'] || '').split(',')[0] 
         || req.connection.remoteAddress;
 };
+
+function getfileType(fileName) {
+     var index = 0;
+    //console.log(nonPrettyString[index]);
+    //console.log(nonPrettyString[index]>57);
+    while(fileName[index]!=null && fileName[index]!='.'){
+        //console.log("happens");
+        index++;
+    }
+        
+    //console.log(index);
+    var ans = fileName.substring(index,fileName.length);
+
+
+    return ans;
+
+};
+
+function anotherCallBack(request,response, yTU) {
+
+    var scrapperData ='';
+        console.log(yTU);
+    cmd.get(
+        yTU,
+        function(data){
+          //console.log(data);
+          scrapperData += data;
+
+          var jsonResponse = myCallBack(5,scrapperData,getClientAddress(request));
+
+          response.writeHead(200, {"Content-Type": "application/json"});
+          response.end(jsonResponse);
+        }
+    );
+   
+};
+
+/*function amazonUpload(fileName,counter) {
+    //cmd.run('node s3_upload.js ' + fileName + ' ' + counter);
+    cmd.get(
+            'node s3_upload.js ' + fileName + ' ' + counter,
+            function(data){
+              anotherCallBack();
+            }
+        );
+    
+    return 'https://s3.amazonaws.com/photoshopperimages/'+counter+'.png';
+};*/
 
 function prettyClientAddress(nonPrettyString) {
     var index = 0;
@@ -103,6 +162,7 @@ server = http.createServer( function(req, res) {
     //console.dir(req.param);
 
     if (req.method == 'POST') {
+        counter++;
         console.log("POST");
         console.log('Incoming post from: ' + prettyClientAddress(getClientAddress(req)) );
         
@@ -116,7 +176,7 @@ server = http.createServer( function(req, res) {
 
         });
         req.on('end', function () {
-            fs.writeFile("body.png", body, 'binary', function(err){
+            fs.writeFile(counter+".png", body, 'binary', function(err){
               console.log("Saved pic.");
               //console.log(body);
             });
@@ -129,27 +189,25 @@ server = http.createServer( function(req, res) {
 
 
         //hardcode return value for now. instead will be method call
-        yayaReturnURL += 'https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg'
+        //sleep(2000);
 
-        var scrapperData ='';
-        //console.log('before');
+        //yayaReturnURL += 'https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg'
+
+        var url = 'https://s3.amazonaws.com/photoshopperimages/'+counter+'.png';
+
+
+        //var url = amazonUpload(counter + '.png',counter);
+        yayaReturnURL += url;
+        console.log(url);
+        console.log(yayaReturnURL);
+        var tempFileName = counter + '.png';
         cmd.get(
-            yayaReturnURL,
+            'node s3_upload.js ' + tempFileName + ' ' + counter,
             function(data){
-              //console.log(data);
-              scrapperData += data;
-
-              var jsonResponse = myCallBack(5,scrapperData,getClientAddress(req));
-
-              res.writeHead(200, {"Content-Type": "application/json"});
-              res.end(jsonResponse);
+              anotherCallBack(req,res,yayaReturnURL);
             }
         );
-        
-        
-
-
-        
+    
         //server.close();
     }
     else
@@ -170,6 +228,7 @@ server = http.createServer( function(req, res) {
 
 });
 
+var counter = process.argv[4];
 port = 3000;
 //host = '127.0.0.0';
 server.listen(port);

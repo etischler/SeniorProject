@@ -10,6 +10,7 @@ var debug = false,
     maxSearchPages = 3;
 //https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
 //https://www.google.com/searchbyimage?&image_url=http://24.250.190.127:3000
+//https://www.google.com/searchbyimage?&image_url=https://i.imgur.com/L3Lpore.jpg
 var createPage = function () {
 
     var page = webpage.create();
@@ -248,7 +249,7 @@ var getLinksAndPrices = function () {
     //console.log(companys.length);
     for(var i = 0; i < 5 && i < companys.length; i++){
 
-        console.log('</' + thumbnails[i] + '\\>');
+        console.log(thumbnails[i]);
 
         if(links[i][0]!=null && links[i][0]=="/")
             console.log('https://www.google.com/'+links[i] /*+ "\n" +  companys[i]*/);
