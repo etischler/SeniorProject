@@ -11,6 +11,7 @@ var debug = false,
 //https://www.google.com/searchbyimage?&image_url=https://images-na.ssl-images-amazon.com/images/I/615UOznDLEL._UL1500_.jpg
 //https://www.google.com/searchbyimage?&image_url=http://24.250.190.127:3000
 //https://www.google.com/searchbyimage?&image_url=https://i.imgur.com/L3Lpore.jpg
+//https://www.google.com/searchbyimage?&image_url=https://s3.amazonaws.com/photoshopperimages/134.png
 var createPage = function () {
 
     var page = webpage.create();

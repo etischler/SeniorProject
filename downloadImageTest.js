@@ -37,6 +37,17 @@ function getfileType(fileName) {
 
 };
 
+function yetAnotherCallBack(req,res,yayaReturnURL,tempFileName,counter) {
+
+    cmd.get(
+        'node s3_upload.js ' + tempFileName + ' ' + counter,
+        function(data){
+          anotherCallBack(req,res,yayaReturnURL);
+        }
+    );
+   
+};
+
 function anotherCallBack(request,response, yTU) {
 
     var scrapperData ='';
@@ -104,14 +115,43 @@ function myCallBack(numResponses,dataString,clientAddress) { //we will now forma
     for(var i = 0; i < forLoopLength; i++){
         //save thumbnail first
         //console.log('happens foor loop');
-        thumbnailsArr.push(lineSplitData[index]);
+        /*thumbnailsArr.push(lineSplitData[index]);
         index++;
         linksArr.push(lineSplitData[index]);
         index++;
         priceArr.push(lineSplitData[index]);
         index++;
         merchantsArr.push(lineSplitData[index]);
-        index++;
+        index++;*/
+        var counter = 0;
+        while(counter<4){
+
+
+            if(lineSplitData[index].length>=4 && lineSplitData[index].substring(0,4)==="data"){
+                //console.log("thumbnail happens");
+                thumbnailsArr.push(lineSplitData[index]);
+                index++;
+                counter++;
+            }
+            else if((lineSplitData[index].length>=1 && lineSplitData[index][0]==='$')){
+                //console.log("price happens");
+                priceArr.push(lineSplitData[index]);
+                index++;
+                counter++;
+            }
+            else if((lineSplitData[index].length>=4 && lineSplitData[index].substring(0,4)==="http")){
+                //console.log("link happens");
+                linksArr.push(lineSplitData[index]);
+                index++;
+                counter++;
+            }
+            else{
+                //console.log("merchants happens");
+                merchantsArr.push(lineSplitData[index]);
+                index++;
+                counter++;
+            }
+        }
             
     }
     console.log('product result');
@@ -120,11 +160,13 @@ function myCallBack(numResponses,dataString,clientAddress) { //we will now forma
     for(var i = 0;i<linksArr.length;i++)
         console.log(linksArr[i]);
     console.log('prices:');
-    for(var i = 0;i<linksArr.length;i++)
+    for(var i = 0;i<priceArr.length;i++)
         console.log(priceArr[i]);
     console.log('merchants:');
-    for(var i = 0;i<linksArr.length;i++)
+    for(var i = 0;i<merchantsArr.length;i++)
         console.log(merchantsArr[i]);
+    //for(var i = 0;i<thumbnailsArr.length;i++)
+      //  console.log(thumbnailsArr[i]);
     console.log('not printing thumbnails due to length');
 
     var json = JSON.stringify({ 
@@ -165,25 +207,7 @@ server = http.createServer( function(req, res) {
         counter++;
         console.log("POST");
         console.log('Incoming post from: ' + prettyClientAddress(getClientAddress(req)) );
-        
-        var body = '';
-        req.setEncoding('binary');
-        //console.log(req.data);
-        req.on('data', function (data) {
-            //f.write(data);
-            body+=data;
-            //console.log("Partial body: " + body);
 
-        });
-        req.on('end', function () {
-            fs.writeFile(counter+".png", body, 'binary', function(err){
-              console.log("Saved pic.");
-              //console.log(body);
-            });
-        
-        });
-
-        //remove write above. it will actually go to yaya's function. pass image path to scrapper function. 
         var yayaReturnURL = 'phantomjs googleScrapper.js ';
 
 
@@ -201,12 +225,29 @@ server = http.createServer( function(req, res) {
         console.log(url);
         console.log(yayaReturnURL);
         var tempFileName = counter + '.png';
-        cmd.get(
-            'node s3_upload.js ' + tempFileName + ' ' + counter,
-            function(data){
-              anotherCallBack(req,res,yayaReturnURL);
-            }
-        );
+        //req,res,yayaReturnURL,tempFileName,counter
+        
+        var body = '';
+        req.setEncoding('binary');
+        //console.log(req.data);
+        req.on('data', function (data) {
+            //f.write(data);
+            body+=data;
+            //console.log("Partial body: " + body);
+
+        });
+        req.on('end', function () {
+            fs.writeFile(counter+".png", body, 'binary', function(err){
+              console.log("Saved pic.");
+              //console.log(body);
+              yetAnotherCallBack(req,res,yayaReturnURL,tempFileName,counter);
+            });
+        
+        });
+
+        //remove write above. it will actually go to yaya's function. pass image path to scrapper function. 
+        
+
     
         //server.close();
     }
@@ -229,6 +270,7 @@ server = http.createServer( function(req, res) {
 });
 
 var counter = process.argv[4];
+console.log(counter);
 port = 3000;
 //host = '127.0.0.0';
 server.listen(port);
